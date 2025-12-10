@@ -1,0 +1,28 @@
+# 大文件与敏感/无关目录
+ckpt
+experiments
+media
+out_batch
+for_max
+.git
+.gitignore
+
+# 模型/数据文件
+*.pth
+*.pt
+*.jpg
+*.png
+
+# 缓存与编译产物
+__pycache__/
+*.pyc
+*.pyo
+.ruff_cache
+.pytest_cache
+.ipynb_checkpoints
+
+# 虚拟环境
+.venv
+env
+venv
+

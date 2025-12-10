@@ -1,5 +1,13 @@
 huggingface_hub
-numpy
+numpy==1.26.4
 opencv_python
 Pillow
 tqdm
+# 日志与可视化
+tensorboard
+# FastAPI 服务与 HTTP 服务器
+fastapi
+uvicorn[standard]
+python-multipart
+# 任务队列
+redis

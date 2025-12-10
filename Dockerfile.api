@@ -1,0 +1,24 @@
+# FastAPI 推理服务容器
+# 基于 PyTorch 官方镜像，包含 CUDA 11.8 运行时
+FROM pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime
+
+WORKDIR /workspace
+ENV DEBIAN_FRONTEND=noninteractive PYTHONPATH=/workspace
+
+# 安装系统依赖：OpenCV 动态库
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 Python 依赖
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制代码：API 应用和源模块
+COPY app.py ./
+COPY src ./src
+
+# 启动 Uvicorn 服务器，监听 10000 端口
+EXPOSE 10000
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "10000"]
+

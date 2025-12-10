@@ -1,0 +1,55 @@
+# TiPGAN 多容器编排配置
+# 包含：Redis 消息队列、FastAPI 后端（GPU）、训练 Worker（GPU）
+
+services:
+  # Redis 任务队列（无外部端口，仅内部通信）
+  redis:
+    image: redis:6
+    restart: unless-stopped
+
+  # FastAPI 推理服务（端口 10000，GPU 推理）
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "10000:10000"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    volumes:
+      - ./ckpt:/workspace/ckpt
+      - ./media:/workspace/media
+      - ./experiments:/workspace/experiments
+      - ./api_managed_outputs:/workspace/api_managed_outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Worker：从 Redis 消费任务，执行 train.py（GPU 训练）
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - TIPGAN_REDIS_HOST=redis
+      - TIPGAN_REDIS_PORT=6379
+      - TIPGAN_REDIS_DB=0
+    volumes:
+      - ./ckpt:/workspace/ckpt
+      - ./media:/workspace/media
+      - ./experiments:/workspace/experiments
+      - ./api_managed_outputs:/workspace/api_managed_outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
